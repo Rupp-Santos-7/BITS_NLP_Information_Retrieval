@@ -7,8 +7,7 @@ import json
 app = Flask(__name__)
 CORS(app)  # Enable CORS
 
-# Load the corpus
-with open('corpus.json', 'r') as f:
+with open('corpus.json', 'r', encoding='utf-8') as f:
     corpus = json.load(f)
 
 # Preprocess and create TF-IDF index
