@@ -1,21 +1,26 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 import json
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS
 
 # Load the corpus
 with open('corpus.json', 'r') as f:
     corpus = json.load(f)
 
-# Preprocess the corpus and create an index (For simplicity, this is just a placeholder)
-index = {doc['id']: doc for doc in corpus}
+# Preprocess and create TF-IDF index
+documents = [doc['text'] for doc in corpus]
+vectorizer = TfidfVectorizer()
+vectors = vectorizer.fit_transform(documents).toarray()
 
 def retrieve_answer(question):
-    # Implement a basic IR technique (e.g., keyword matching) to retrieve the answer
-    for doc_id, doc in index.items():
-        if question.lower() in doc['text'].lower():
-            return doc['text']
-    return "Answer not found."
+    query_vector = vectorizer.transform([question]).toarray()
+    cosine_similarities = np.dot(query_vector, vectors.T).flatten()
+    best_match = np.argmax(cosine_similarities)
+    return documents[best_match]
 
 @app.route('/ask', methods=['POST'])
 def ask():
